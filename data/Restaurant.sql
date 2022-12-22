@@ -1,6 +1,6 @@
-BEGIN TRANSACTION;
+--BEGIN TRANSACTION;
 
-CREATE TABLE Dish (
+CREATE TABLE IF NOT EXISTS Dish (
   Id INTEGER PRIMARY KEY AUTOINCREMENT,
   Name VARCHAR(255) NOT NULL,
   Category VARCHAR(255) NOT NULL,
@@ -44,6 +44,18 @@ INSERT INTO Dish(Name, Category, Vegetarian, Price) VALUES ("Soda", "Drink", TRU
 --INSERT INTO Dish(Name, Category, Vegetarian, Price) VALUES ("Grilled Veggie Sandwich", "Lunch", TRUE, 9.99);
 --INSERT INTO Dish(Name, Category, Vegetarian, Price) VALUES ("Falafel", "Dinner", TRUE, 14.99);
 
+CREATE TABLE IF NOT EXISTS Restaurant (
+  Id INTEGER PRIMARY KEY AUTOINCREMENT,
+  Name VARCHAR(255) NOT NULL,
+  Location VARCHAR(255) NOT NULL,
+  BestSellerId INTEGER
+);
+
+INSERT INTO Restaurant(Name, Location, BestSellerId) VALUES ("Cosmo Cafe", "123 Street", 24);
+INSERT INTO Restaurant(Name, Location, BestSellerId) VALUES ("Cozy Bistro", "987 Road", 16);
+INSERT INTO Restaurant(Name, Location, BestSellerId) VALUES ("Iron Steakhouse", "246 Boulevard", 13);
+INSERT INTO Restaurant(Name, Location, BestSellerId) VALUES ("Leaf House", "369 Avenue", 9);
+INSERT INTO Restaurant(Name, Location) VALUES ("Bar 110", "110 Crescent");
 
 
-COMMIT;
+--COMMIT;
