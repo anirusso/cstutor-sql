@@ -69,7 +69,7 @@ For example, to select the Name of all dishes where the Price is under $10, we c
 ```
 SELECT Name
 FROM Dish
-WHERE Price > 10.00;
+WHERE Price < 10.00;
 ```
 
 To see a full list of conditional operators, check the reference sheet.
