@@ -109,9 +109,9 @@ Now that we understand these properties, we can construct a table with the appro
 ## SQL FILE
 We can use a **.sql** file to store SQL commands needed to build a database schema. To start, create a new file, using a preferred text editor or the command line, and make sure the file is saved with the extension .sql. 
 
-To create a database, use the `sqlite3 databasename.db` command on the command line. Then, to read your sql file, use the `.read filename.sql` command inside the interactive terminal.
+To create a database, use the `sqlite3 databasename.db` command on the command line. Then, to read your sql file, use the `.read filename.sql` command inside the interactive terminal. This will read the sql commands in the file and run the commands within the database.
 
-This will read the sql commands in the file and run the commands within the database.
+A database can contain one or several tables. To view all the tables in a database, you can use the `.tables` command inside the sqlite3 terminal, after running `sqlite3 databasename.db`. If we want to know all the columns in a specific table, we can use the `PRAGMA table_info(TableName)` command. 
 
 ### Comments
 A comment is used in an SQL file to mark human-readable and computer-ignored lines. A line of code which is “commented out” will not be evaluated and is there solely for the benefit of a person reading it.
