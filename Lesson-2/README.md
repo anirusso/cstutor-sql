@@ -1,232 +1,245 @@
-# LESSON TWO: SQL COMMANDS (DML)
-Welcome to the second lesson in the CSTutor SQL course! This lesson goes over DML, or **Database Manipulation Language**. This covers basic commands in SQL,
-such as how to access data and how to update data.
+# LECTURE TWO: DDL
+Description: This lesson goes over the basics of SQL, including data types and data modeling to create a schema, and goes over the basics of Data Definition Language.
 
 ## DATA AND VALUES
-SQL, or **structured query language**, is a programming language which facilitates the ability to access and manipulate large sets of data. Data is stored in a *table* form, with *columns* of data, and *rows* of data entities.
 
-For example, our database Restaurants stores information on dishes. In the Dish table, columns such as ‘Name’, ‘Category’, ‘Price’, etc, hold information on each dish. Each row of data is a different dish with a value for each column. An example row might be “Lasagna”, with the value in the Category column being “Dinner” and value in the Price column being 13.99.
+SQL, or structured query language, is a programming language which facilitates the ability to access and manipulate large sets of data. Data is stored in a table form, with columns of data, and rows of data entities.
 
-| Name              | Category    | Price |
-| ----------------- | ----------- | ----- |
-| Lasagna           | Dinner      | 13.99 |
-| Veggie Sandwich   | Lunch       | 9.99  |
+For example, a table named Orders might hold values for each order:
+- Each separate order is a **data entity**
+- Columns would hold information on the entity, such as the orderId, the total, the date, etc.
+- Rows would hold the information on a single entity, ie, a single order placed.
 
-The values in each column should be consistent. For example, a dish shouldn’t have a number under Category, or a sentence under Price. 
+| OrderId             | Company   | Date | Total |
+| ------------------- | -------- | ----- | ----- |
+| 100 | Logistics Inc. | 2021-01-01 | 123.45 |
+| 101 | ShippingJoy | 2021-01-02 | 500.50 |
+| 110 | MovCo | 2021-01-03 | 60.00 |
 
-In order for the data to be consistent, we need to have a specific **data type** when entering values. The data types describe the type of data being entered.
+The values in each column should be consistent. For example, an order shouldn’t have a decimal number under Company, or text under Total. 
 
-Name, Category: Should be words. In SQL, we use text or varchar(#) to specify a “string” of words. For example, you might use varchar(255) to specify a string of max 255 characters.
-Price: Should be a number, in this case a decimal, or “real” number.
+In order for the data to be consistent, we need to have a specific **data type** when entering values. The data types describe the type of value of data being entered.
 
-**Numbers** can be integers or real:
+**Numbers:** can be integers or decimal:
 - **Integer:** A whole number with no fractional part, positive or negative.
 - - Examples: 0, -1, 123
 - **Real:** A floating-point, or decimal number, positive or negative.
 - - Examples: 0.0009, -3.50, 1.0
 
+**Text:** a string of characters
+- **varchar(num):** specifies a string of num characters
+- - Examples: varchar(255) is a string of 255 characters
+- **Text:** In SQLite, the value is a variable-length text string, stored using the database encoding
+
+**Boolean:** True or False values
+- **TRUE** can be specified using the text TRUE or the value 1
+- **FALSE** can be specified using the text FALSE or the value 0
+
+**Datetime:** SQLite does not have a specific format for dates. 
+- A text such as `("YYYY-MM-DD HH:MM:SS.SSS")` can be used and formatted using datetime functions (more on those in further section).
+
+**NULL:** If a cell of data is left blank, the value of that cell will be NULL. This means that the data for that particular column and row intersection is missing.
+
 You can check the ref sheet for a list of data types with examples, or the sqlite documentation here: https://www.sqlite.org/datatype3.html.
 
-#### Viewing Table Data
 
-A database can contain one or several tables. To view all the tables in a database, you can use the `.tables` command in the sqlite3 interface. If we want to know all the columns in a specific table, we can use the `PRAGMA table_info(TableName)` command. This will give a list of columns as well as some info on the columns (more on that in the next section).
+## DATA MODELLING
 
-## ACCESSING DATA
-If we want to access the data in a table, we need to use the `SELECT` operator in conjunction with the `FROM` operator. 
-- **SELECT** dictates which *columns* to select
-- **FROM** dictates which *table* to select the columns from.
+Database management is the process of identifying real-world entities, attributes, and relationships, and forming these values into a database management system.
 
-The syntax is:
+For example, in a Movie system, you might identify an entity as a Movie, with attributes such as Title, ReleaseDate, Director. 
 
-```
-SELECT Column, [Column2, Column3, … ColumnN]
-FROM Table;
-```
+We would then identify how these attributes and entities should be represented: the Movie schema would be represented as a table, with the Title being text, ReleaseDate being a datetime, RunningTime being an int or float, etc.
 
-This will return all the rows of the selected columns from the selected table. 
+In a tabular data schema:
+- Entities: table
+- Attributes: columns
+- Instances: rows
 
-Note that you can select one, multiple, or all columns from a table. The * operator selects all columns from a table:
+When defining a database, there are two kinds of language used:
+- **DDL (Data definition Language)** represents the schema: commands for setting up schema of data (creating a database or table, deleting or altering structure of a table or column)
+- **DML (Data Manipulation Language)** represents instance of data: commands to manipulate data, also called “query language” (selecting data, adding data, deleting data)
 
-```
-SELECT * FROM TABLE;
-```
-The above command will returns all rows and all columns from the table.
+### ACID Properties
 
-#### Filtering
+**Transaction:** A group one or more operations (DDL, DML) into a single unit of work.
 
-To select only specific rows from a table, we can use a `WHERE` clause to dictate that we want to select only the rows where the specific condition is met.
-
-The syntax is:
+Example:
 
 ```
-SELECT Column, [Column2, Column3, … ColumnN]
-FROM Table
-WHERE condition;
+BEGIN TRANSACTION
+INSERT Movie
+INSERT Movie’s Director IF NOT EXIST
+INSERT Movie’s distributor Company IF NOT EXIST
+END TRANSACTION
 ```
 
-For example, to select the Name of all dishes where the Price is under $10, we can use:
+Transactions must adhere to certain properties known as **ACID properties**
+
+**Atomicity:** All or nothing execution of transaction
+- Does entire transaction, or else whole transaction undone; rollback of partial transaction changes
+
+**Consistency:** Respect constraints or expectations among data instances 
+- Example: All Movies Must Have at Least One Director constraint → you cannot enter a movie into the table if the director is not included
+
+**Isolation:** Transactions appear to be executed as if no other transaction is executing at the same time (sequentially)
+- Even if done in parallel, should appear as though executed sequentially
+
+**Durability:** Once a transaction has committed, it’s effect must never be lost
+- Example: function exception, program crash, system crash (files may not be durable, ie file deleted or corrupted on hard drive)
+
+### Entities
+
+**Entity:** An entity in a database is a thing, place, person or object that is independent of another, in which you can store data about.
+- Example: The movie ‘The Birds’ in a movie table, or the order number ‘1001’ in a table of orders.
+
+**Entity set:** A set of entities of the same type that share the same properties
+- Example: The set of movies {‘The Birds’, ‘Apocalypse Now’, ‘Psycho’}
+
+**Attributes:** Properties of entities in an entity set
+- Example: Movies might have the properties ‘Title’, ‘Running time’, ‘Release date’
+
+**Key:** An attribute or a set of attributes which uniquely identify an entity in entity set
+- Example: an orderId, or a title in a movie. If there multiple movies with the same name, the set of attributes {Title, ReleaseDate} might suffice.
+- The key must be unique and the key cannot be NULL
+
+Now that we understand these properties, we can construct a table with the appropriate entities and attributes.
+
+
+## SQL FILE
+We can use a **.sql** file to store SQL commands needed to build a database schema. To start, create a new file, using a preferred text editor or the command line, and make sure the file is saved with the extension .sql. 
+
+To create a database, use the `sqlite3 databasename.db` command on the command line. Then, to read your sql file, use the `.read filename.sql` command inside the interactive terminal.
+
+This will read the sql commands in the file and run the commands within the database.
+
+### Comments
+A comment is used in an SQL file to mark human-readable and computer-ignored lines. A line of code which is “commented out” will not be evaluated and is there solely for the benefit of a person reading it.
+You can use comments in your SQL file by typing `--` followed by the comment. For example, 
+
+```--this is a comment``` 
+
+will comment out the line starting from the dashes to the end of the line.
+
+Typing:
 
 ```
-SELECT Name
-FROM Dish
-WHERE Price < 10.00;
+/*
+Commented out
+*/
 ```
 
-To see a full list of conditional operators, check the reference sheet.
+will comment out multiple lines from the first `/*` to the ending `*/`
 
-## AGGREGATE FUNCTIONS
+## CREATING A TABLE
 
-Aggregate functions return a single value from a table, usually a calculated value from a column in the table. The syntax is: `FUNCTIONNAME(ColumnToCalculate)`, where FUNCTIONNAME is the name of the function (see reference sheet for a full list) and ColumnToCalculate is passed as an argument to the function.
-
-For example, if you wanted to find the maximum value in a column titled Price, you would use the MAX function passing the column Price as an argument:
-
+**SYNTAX:** 
 ```
-SELECT MAX(Price)
-FROM Dish;
-```
-
-The COUNT function returns the total number of rows returned. For example, if you had 25 rows in the Dish table, the command
-
-```
-SELECT COUNT(*)
-FROM Dish;
+CREATE TABLE TableName (
+  ColumnName Datatype,
+  ColumnName2 Datatype,
+  [...]
+);
 ```
 
-would return a single value, 25. If you put a column value as an argument, it would return the number of **non-null values** in the table for that column. 
+For example, to create a new table called Order, with 3 columns pertaining to the Id of the order, the name on the order, and the total cost, we could use:
 
-If you wanted to count the number of Vegetarian dishes in the table, you could use the count function with a where clause:
 
 ```
-SELECT COUNT(*)
-FROM Dish
-WHERE Vegetarian = TRUE;
+CREATE TABLE Order (
+  OrderId INT,
+  Name VARCHAR(255),
+  Total REAL
+);
 ```
 
-This will return the number of rows returned by the where clause, which is all the dishes that are categorized as vegetarian.
+Note the datatypes of each column:
+- **Id** will hold the integer id of each order, from 1 – n orders, so we use INT.
+- **Name** holds the name on the order, a String value, so we use VARCHAR(255).
+- **Total** will be the total cost of the order, so it will be a double precision value, or decimal value, using REAL.
 
-## ORDER BY & LIMIT
+### Primary Key
 
-Sometimes we want to retrieve sorted data, that is, data which has been organized either from its maximum value to its minimum value (**descending**), or from its minimum value to its maximum value (**ascending**).
-
-To do this, we can retrieve our data using the `ORDER BY` clause. This will retrieve the data (but not alter the data itself within the database), in sorted order.
-
-For example, if we wanted to see a list of all the Dishes from the lowest priced dish to the highest, we could use 
-
+The Id value of the column will uniquely identify each row. We can set this value to auto-increment instead of setting it manually each time using the following command:
 ```
-SELECT * FROM Dish
-ORDER BY Price ASC;
+ColumnName1 INT PRIMARY KEY AUTOINCREMENT
 ```
 
-Note that the Order By clause, by default, puts the results in ascending order. Therefore, we don’t need to include the ASC keyword after Price. 
+This will automatically set the first row to 1, the next row to 2, and so on. No values will be duplicated.
 
-In order to view the highest price dish to the lowest priced dish, we could use the `DESC` keyword instead:
-
-```
-SELECT * FROM Dish
-ORDER BY Price DESC;
-```
-
-We might also want to limit the results returned. For example, if we wanted to find the top 5 cheapest dishes available, we could use the `LIMIT` clause, which limits the number of rows returned:
+If we want to add multiple columns to the primary key, we can use the `CONSTRAINT` keyword after we create the columns:
 
 ```
-SELECT * FROM Dish
-ORDER BY Price
-LIMIT 5;
+CREATE TABLE TableName (
+  Column1 DataType, 
+  Column2 DataType, …
+  CONSTRAINT PK_Name PRIMARY KEY (Column1, Column2)
+);
 ```
+This will create a primary key from the value of both Column1 & Column2 together. 
 
-This orders the dishes by Price in ascending order, then returns only 5 results, which are the top 5 lowest priced dishes.
+Note that by convention, the constraint naming follows the syntax: `Constraint_Column1Name_Column2Name`
 
-## INSERTING & DELETING
-#### Insertion
-Before inserting data into a table, we need to know the columns of our table. We can use the `PRAGMA table_info(TableName)` command to return a list of a table’s columns and the data types. We can use this when entering the data to ensure we are repsecting the data type integrity. 
+### Unique Values
 
-For example, the Dish table has 5 columns: Id (INTEGER), Name (VARCHAR(255)), Category VARCHAR(255), Vegetarian (BOOLEAN), and Price (REAL).
-
-To add a new row, we need to insert values into each of these columns, except ID, which auto increments (more on that in the DDL lesson).
-
-The syntax for inserting is: 
+If we want to make sure that the table we are creating does not already exist, we can use `IF NOT EXISTS` before the table name when creating a table:
 
 ```
-INSERT INTO Table (Column1, Column2, …, ColumnN) 
-VALUES (Column1Value, Column2Value, …, ColumnNValue);
+CREATE TABLE IF NOT EXISTS Order ( …
 ```
 
-For our table, we want to insert values for every column except Id, so we can use:
+To create a unique value for a column, we can use the `UNIQUE` keyword after the datatype when creating a column:
 
 ```
-INSERT INTO Dish (Name, Category, Vegetarian, Price) 
-VALUES ("Grilled Veggie Sandwich", "Lunch", TRUE, 9.99);
+CREATE TABLE IF NOT EXISTS TableName (
+  ColumnName1 DataType UNIQUE, …
+);
 ```
 
-This creates a new dish, named Grilled Veggie Sandwich, with the Category Lunch, Vegetarian value TRUE, and a Price of 9.99.
+This will ensure that every value entered for this column is unique. If the value is not unique, the RDBMS will return an error.
 
-#### Deleting
-To delete a single row, we want to specify the row using a unique value. For example, to delete the Grilled Veggie sandwich, we would use:
-
-```
-DELETE FROM Dish
-WHERE Name LIKE 'Grilled Veggie Sandwich';
-```
-
-This will delete the row with the matching name. But if we used:
+Like the Primary key, we can use constraint to set multiple columns to be unique:
 
 ```
-DELETE FROM Dish
-WHERE Name LIKE 'Sandwich';
+CREATE TABLE TableName (
+  Column1 DataType, 
+  Column2 DataType, …
+  CONSTRAINT UK_Column1_Column2 UNIQUE (Column1, Column2)
+);
 ```
 
-this would delete all the rows where the Name column contains the word 'Sandwich'. 
-
---> Note that omitting the WHERE clause entirely will ***delete every row in the table!***
-
-We could also make sure we are deleting the right now by checking the Id with a SELECT statement
+If we want to ensure that every row in a column has a value, ie, there are no NULL values, we can use `NOT NULL`:
 
 ```
-SELECT Id FROM Dish
-WHERE Name LIKE 'Sandwich';
+CREATE TABLE IF NOT EXISTS TableName (
+  ColumnName1 DataType NOT NULL, …
+);
 ```
 
-This will return the Id of all the rows containing the word sandwich in the name. If there is more than 1 row, this means all these rows will be deleted if we used this in a `WHERE` clause with `DELETE`. 
-Instead, we can find the ID of the correct row and delete that:
+## ALTERING & DELETING A TABLE
+
+We can use the `ALTER TABLE TableName` command to make changes to a table we already created. After typing the above command, we can add the alteration we want to make.
+
+### Altering
+- Add a new column: `ADD COLUMN ColumnName DataType`
+- Delete a column: `DROP COLUMN ColumnName`
+- Rename a column: `RENAME COLUMN OldName TO NewName`
+- Rename a table: `RENAME TO NewTableName`
+
+Note that when adding a new column, all previous rows will set the value of the new column to NULL. If we want the new column to be non-null, that is, we want to set a constraint that every row should have a value for this column, we can set a **default value**:
 
 ```
-SELECT Id FROM Dish
-WHERE Name LIKE 'Grilled Veggie Sandwich'; 
-```
-→ Returns 26
-
-```
-DELETE FROM Dish
-WHERE Id = 26;
+ALTER TABLE TableName
+ADD COLUMN ColumnName DataType
+NOT NULL
+DEFAULT DefaultValue;
 ```
 
-Since Id is a unique value, this will only delete one row, with the matching Id.
+We can also set the default value when creating a new column. This will set the column value to DefaultValue for every row which does not explicitly set the value when adding a row. 
 
-## UPDATING
+### Deleting
+Delete every row in a table, leaving the table intact but empty: `TRUNCATE TABLE TableName`
+- The table will still exist and can be altered and added to.
 
-What if we want to change values in a row? We can use the `UPDATE` command to change the value in a column.
-
-The syntax is:
-
-```
-UPDATE Table
-SET col1 = val1, col2 = val2, …
-[WHERE condition];
-```
-
-Like the `DELETE` command, the `WHERE` condition specifies which rows to be altered. If it is omitted, all the values for every row will be updated in that column.
-
-For example, the following:
-
-```
-UPDATE Dish
-SET Name = "Veggie Sandwich";
-```
-
-will change the name of every Dish in the table to "Veggie Sandwich"!
-
-
-
-
-
-
+Delete the table itself: `DROP TABLE TableName`
+- The table will be dropped and can no longer be altered or added to
