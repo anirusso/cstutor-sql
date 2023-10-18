@@ -47,11 +47,13 @@ We can use the AS keyword for multiple columns:
 
 ```
 SELECT
- COL1 As A,
- COL2 As B,
- COL3 As C
+ COL1 AS A,
+ COL2 AS B,
+ COL3 AS C
 FROM Table
 ```
+
+The AS keyword can also be omitted as it is not required: `SELECT Column Alias` works just as well.
 
 ## WHERE Clause
 
