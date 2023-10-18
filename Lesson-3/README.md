@@ -1,238 +1,326 @@
-# LESSON THREE: SQL COMMANDS (DDL)
+# LECTURE THREE: DML
+Description: This lesson goes over DML, data manipulation language. With the database and tables created, we learn how to add entities, update them, and select them.
 
-## SQL FILE
+## SELECT
 
-So far, we’ve been using the SQLite3 interactive terminal to write commands. But we can use a file to store commands and read it into the terminal instead. This will make it easier when building a database later on.
+If we want to access the data in a table, we need to use the `SELECT` operator in conjunction with the `FROM` operator. 
+- **SELECT** dictates which *columns* to select
+- **FROM** dictates which *table* to select the columns from.
 
-To start, create a new file, using a preferred text editor or the command line, and make sure the file is stored with the extension .sql. For example, the Restaurant.sql file we used the .read command on is a sql file containing a series of commands that are run when the file is read.
+The result is given to us as a view, ie, a snapshot of the rows and columns of the table we are selecting from.
 
-#### Comments
-A comment is used in an SQL file to mark human-readable and computer-ignored lines. A line of code which is “commented out” will not be evaluated and is there solely for the benefit of a person reading it.
-You can use comments in your SQL file by typing `--` followed by the comment. For example, 
+Syntax: `SELECT Column, [Column2, Column3, … ColumnN] FROM Table;`
 
-```--this is a comment``` 
+This will return every row of the selected columns from the selected table.
 
-will comment out the line starting from the dashes to the end of the line.
-
-Typing:
-
-```
-/*
-Commented out
-*/
-```
-
-will comment out multiple lines from the first `/*` to the ending `*/`
-
-## CREATING A TABLE
-
-To create a new table within a database, we can use the command `CREATE TABLE TableName (...);`, passing in the parenthesis the data types and names of each column we want in our table.
-
-For example, to create a new table called Order, with 3 columns pertaining to the Id of the order, the name on the order, and the total price, we could use:
+Note that you can select one, multiple, or all columns from a table. The `*` operator selects **all columns** from a table:
 
 ```
-CREATE TABLE Order (
-  OrderId INT,
-  Name VARCHAR(255),
-  Total REAL
-);
+SELECT * FROM TABLE;
 ```
 
-Note the datatypes of each column:
-- **Id** will hold the integer id of each order, from 1 – n orders, so we use INT.
-- **Name** holds the name on the order, a String value, so we use VARCHAR(255).
-- **Total** will be the total price of the order, so it will be a double precision value, or decimal value, using REAL.
+#### Distinct
+To get a list of all the values of a column, without duplicate results, we can use the `DISTINCT` keyword
 
-#### Primary Key
+Syntax: `SELECT DISTINCT Column FROM TABLE;`
 
-The Id value of the column will uniquely identify each row. We can set this value to auto-increment instead of setting it manually each time using the following command:
-```
-ColumnName1 INT PRIMARY KEY AUTOINCREMENT
-```
+This will return all the values inside the column. If a value is repeated in the column, it will be returned only once, giving us all the different values within that column. 
 
-This will automatically set the first row to 1, the next row to 2, and so on. No values will be duplicated.
-
-If we want to add multiple columns to the primary key, we can use the `CONSTRAINT` keyword after we create the columns:
+For example, if we were to query the Orders table using 
 
 ```
-CREATE TABLE TableName (
-  Column1 DataType, 
-  Column2 DataType, …
-  CONSTRAINT PK_Name PRIMARY KEY (Column1, Column2)
-);
-```
-This will create a primary key from the value of both Column1 & Column2 together. 
-
-#### Unique Values
-
-If we want to make sure that the table we are creating does not already exist, we can use `IF NOT EXISTS` before the table name when creating a table:
-
-```
-CREATE TABLE IF NOT EXISTS Order ( …
+SELECT DISTINCT Country
+FROM Orders;
 ```
 
-To create a unique value for a column, we can use the `UNIQUE` keyword after the datatype when creating a column:
+This would return a list of every country under the Country column in the Orders table
+
+#### Alias
+
+To rename the column in the view returned by the select statement we can use the `AS` keyword. 
+
+Syntax: `SELECT Column AS Alias`
+
+Note that we are not changing anything in the table itself. We are only changing the view returned by the select statement that we are looking at.
+
+We can use the AS keyword for multiple columns:
 
 ```
-CREATE TABLE IF NOT EXISTS TableName (
-  ColumnName1 DataType UNIQUE, …
-);
+SELECT
+ COL1 As A,
+ COL2 As B,
+ COL3 As C
+FROM Table
 ```
 
-This will ensure that every value entered for this column is unique. If the value is not unique, the RDBMS will return an error.
+## WHERE Clause
 
-If we want to ensure that every row in a column has a value, ie, there are no NULL values, we can use `NOT NULL`:
+To select only specific rows from a table, we can use a `WHERE` clause to dictate that we want to select only the rows where the specific condition is met.
 
+Syntax:
 ```
-CREATE TABLE IF NOT EXISTS TableName (
-  ColumnName1 DataType NOT NULL, …
-);
-```
-
-# ALTERING & DELETING A TABLE
-
-We can use the `ALTER TABLE TableName` command to make changes to a table we already created. After typing the above command, we can add the alteration we want to make.
-
-Alterations:
-- Add a new column: `ADD COLUMN ColumnName DataType`
-- Delete a column: `DROP COLUMN ColumnName`
-- Rename a column: `RENAME COLUMN OldName TO NewName`
-- Rename a table: `RENAME TO NewTableName`
-
-Note that when adding a new column, all previous rows will set the value of the new column to NULL. If we want the new column to be non-null, that is, we want to set a constraint that every row should have a value for this column, we can set a **default value**:
-
-```
-ALTER TABLE TableName
-ADD COLUMN ColumnName DataType
-NOT NULL
-DEFAULT DefaultValue;
+SELECT Column, [Column2, Column3, … ColumnN]
+FROM Table
+WHERE condition;
 ```
 
-We can also set the default value when creating a new column. This will set the column value to DefaultValue for every row which does not explicitly set the value when adding a row. 
-
-#### Deleting
-To delete every row in a table, we can use the `TRUNCATE TABLE TableName` command. The table will still exist and can be altered and added to.
-
-To delete the table itself, we can use the `DROP TABLE TableName` command. The table will be dropped and can no longer be altered or added to.
-
-# JOINING TABLES
-
-Sometimes, we want to join data from one table to another. Let’s look at the Restaurant table in our database:
+For example, to select the Name of all dishes where the Price is under $10, we can use:
 
 ```
-SELECT * FROM Restaurant;
+SELECT Name
+FROM Dish
+WHERE Price < 10.00;
 ```
 
-This gives us a list of restaurants, their location, and BestSellerId. BestSellerId is a **foreign key** connecting the Restaurant table to the Dish table. 
+To see a full list of conditional operators, check the attached reference sheet.
 
-A foreign key is a column (or multiple columns) that connect one table with the primary key of another table. In our example, BestSellerId links the primary key from the Dish table to a column indicating the best selling dish in a restaurant.
+## AGGREGATE FUNCTIONS
 
-### CARTESIAN JOIN
+Aggregate functions return a single value from a table, usually a calculated value from a column in the table. The syntax is: `FUNCTIONNAME(ColumnToCalculate)`, where *FUNCTIONNAME* is the name of the function (see reference sheet for a full list) and *ColumnToCalculate* is a value, typically a column, passed as an argument to the function.
 
-We can connect the two tables by selecting them in the `FROM` clause:
-
-```
-SELECT *
-FROM Dish, Restaurant
-```
-
-This command will return *every row of Dish matched with every row from Restaurant*. This multiple pairing is known as a **Cartesian Join**.
-
-For example, if we have a table T1 and a second table T2, as follows:
-
-|T1   | T2 |
-|-----| ---|
-|1		| A  |
-|2		| B  |
-|3		| C  |
-
-A cartesian join will produce:
-
-#### T1 x T2
-| T1|T2 |
-| - | - |
-| 1 | A |
-| 1 | B |
-| 1 | C |
-| 2 | A |
-| 2 | B |
-| 2 | C |
-| 3 | A |
-| 3 | B |
-| 3 | C |
-
-The result set is not very meaningful for our purposes. Instead, we want to join tables which are connected by a foreign key or another connected value.
-
-If we want to join the Dish and Restaurant table, we could connect them by the Id column of Dish and BestSellerId of Restaurant in a `WHERE` clause.
+For example, if you wanted to find the maximum value in a column titled Cost, you would use the MAX function passing the column Cost as an argument:
 
 ```
-SELECT *
-FROM Restaurant, Dish
-WHERE Restaurant.BestSellerId = Dish.Id;
+SELECT MAX(Cost)
+FROM Orders;
 ```
 
-The result set is a meaningful connection showing the columns of Restaurant matched with the columns of Dish, where the Id of Dish is included in the list of BestDishId’s.
+The view returned would be a single column and row. The column name would be 'MAX(Cost)' and the value in the single row would be the highest value in the Cost column.
 
-### INNER JOIN
-
-We can accomplish the same result by using an **inner join**, which joins two tables on a condition:
+The COUNT function returns the total number of rows returned. For example, if you had 25 rows in the Order table, the command
 
 ```
-SELECT * FROM Restaurant
-INNER JOIN Dish ON Restaurant.BestSellerId = Dish.Id;
+SELECT COUNT(*)
+FROM Orders;
 ```
 
-The result set will be the same: The restaurants with a BestSellerId will be matched with the rows of a dish with the matching Id.
+would return a single value, 25. If you put a column value as an argument, it would return the number of rows with **non-null values** in the table for that column. 
 
-### LEFT JOIN
-
-If we want to return all the values from one table, plus only the matching values from another, we can use a **left join**:
+If you wanted to count the number of Vegetarian dishes in the Dish table, you could use the count function with a where clause:
 
 ```
-SELECT * FROM Restaurant
-LEFT JOIN Dish ON Restaurant.BestSellerId = Dish.Id;
+SELECT COUNT(*)
+FROM Dish
+WHERE Vegetarian = TRUE;
 ```
 
-This will return all restaurants, including those without a value in the BestSellerId column. It will include only those dishes with a matching Id in the BestSellerId column, and for those restaurants without, the values will be null.
+This will return the number of rows returned by the where clause, which is all the dishes that are categorized as vegetarian.
 
-If we want to return only a selected column, instead of all the columns, we could specify that:
+## GROUP BY & ORDER BY
 
+### GROUP BY & HAVING
+
+Syntax:
 ```
-SELECT Name FROM Restaurant
-LEFT JOIN Dish ON Restaurant.BestSellerId = Dish.Id;
-```
-
-The above command creates a problem: Trying to return the Name column is ambiguous as both tables have a Name column; which one do we want?
-
-We can specify the table we want the columns of by using the dot operator:
-
-```
-SELECT Table1.Column1, Table2.Column2
-FROM Table1, Table2;
+SELECT [cols] FROM Table
+GROUP BY [column]
 ```
 
-For example, if we only want the name of the Restaurant and the name of the best dish, we could use:
+**Group by** is used to aggregate the data to get insights from it. By grouping by a column, the view returns a single row for each distinct value in that column.
+
+For example, `GROUP BY Country` would return a single row for each individual value in the Country column. The other columns would be populated by the data in the first row for each value in that column with the matching country.
+
+Group by is best used with aggregation functions. There are three phases when you group data:
+- Dataset is split into chunks of rows 
+- An aggregate function is computed on each chunk of rows, returning a single value for each chunk.
+- Each resulting output is combined into a new view, with the aggregate values displayed for each chunk.
+
+Going back to the Country example, we could find the total number of Orders in each country by combining `GROUP BY` with the aggregate function `COUNT`
 
 ```
-SELECT Restaurant.Name, Dish.Name
-FROM Restaurant
-INNER JOIN Dish ON Restaurant.BestSellerId = Dish.Id;
+SELECT Country, COUNT(OrderId)
+FROM Orders
+GROUP BY Country;
 ```
 
-#### Using an Alias
+This will return a new view with 2 columns: the name of the country, and the number of orders in each country.
 
-Typing out the names of each table can be cumbersome. Instead, we can use an alias, which is temporary renaming of a table to be returned. Note that this does not change the table name itself, only a temporary value when a table is returned. The `AS` keyword specifies an alias:
+#### HAVING 
+
+Group by can be accompanied by the `HAVING` keyword to get even more specific views of data. Like WHERE, the HAVING clause filters the rows of a table, but only within each of the chunks of rows defined by the GROUP BY statement.
+
+Syntax: `GROUP BY [Column] HAVING [condition]`
+
+For example, what if we wanted to get the number of orders in each country, but only those countries that have ordered more than $1000 worth of goods?
 
 ```
-SELECT *
-FROM Table AS Alias;
+SELECT Country, COUNT(OrderId), SUM(Total)
+FROM Orders
+GROUP BY Country
+HAVING SUM(Total) > 1000;
 ```
 
-For example, we can call our Restaurant table R, our Dish table D, and use the alias within the SQL query:
+First, the GROUP BY keyword returns chunks of rows grouped by the Country column; all rows with the same country are grouped together. Then the HAVING clause is applied. It calculates the sum of the Total column, and if the condition is met, then those rows are aggregated and returned. 
+
+Similarly, we can limit the output to only countries that have ordered more than 10 items:
 
 ```
-SELECT R.Name AS Place, D.Name
-FROM Restaurant AS R
-INNER JOIN Dish AS D ON R.BestSellerId = D.Id;
+SELECT Country, COUNT(OrderId)
+FROM Orders
+GROUP BY Country
+HAVING COUNT(OrderId) > 10;
 ```
 
+### ORDER BY & LIMIT
+
+Sometimes we want to retrieve sorted data, that is, data which has been organized either from its maximum value to its minimum value (**descending**), or from its minimum value to its maximum value (**ascending**).
+
+To do this, we can retrieve our data using the `ORDER BY` clause. This will retrieve the data (but not alter the data itself within the database), in sorted order.
+
+For example, if we wanted to see a list of all the Dishes from the lowest priced dish to the highest, we could use 
+
+```
+SELECT * FROM Dish
+ORDER BY Price ASC;
+```
+
+Note that the Order By clause, by default, puts the results in ascending order. Therefore, we don’t need to include the ASC keyword after Price. 
+
+In order to view the highest price dish to the lowest priced dish, we could use the `DESC` keyword instead:
+
+```
+SELECT * FROM Dish
+ORDER BY Price DESC;
+```
+
+#### Limit
+We might also want to limit the results returned. For example, if we wanted to find the top 5 cheapest dishes available, we could use the `LIMIT` clause, which limits the number of rows returned:
+
+```
+SELECT * FROM Dish
+ORDER BY Price
+LIMIT 5;
+```
+
+This orders the dishes by Price in ascending order, then returns only 5 results, which are the top 5 lowest priced dishes.
+
+#### Offset
+
+What if we wanted to skip some rows in the view that is returned? The `OFFSET` keyword is used to offset the rows returned by n amount: `OFFSET 5` will skip the first 5 results and return the 6th and so on.
+
+To get the order with the 3rd highest total, we could use:
+
+```
+SELECT OrderId
+FROM Orders
+ORDER BY Total DESC
+LIMIT 1
+OFFSET 2
+```
+
+This arranges all the orders in the table by their total, descending. Only 1 row is returned, but the result skips the first 2, so only the 3rd highest total is returned.
+
+### Order of Commands
+
+In SQL, commands must be written in a certain order, or errors will be returned. The correct order is:
+
+```
+	SELECT [DISTINCT] Columns			
+	FROM Tables 					
+	[WHERE condition] 					
+	[GROUP BY Columns] 			
+	[HAVING condition] 					
+	[ORDER BY Columns [ASC | DESC]] 		
+	[LIMIT # [OFFSET #]]			
+```
+
+## INSERTING, DELETING, UPDATING
+### Insertion
+
+Before inserting data into a table, we need to know the columns of our table. We can use the `PRAGMA table_info(TableName)` command to return a list of a table’s columns and the data types. We can use this when entering the data to ensure we are respecting the data type integrity. 
+
+For example, the Dish table has 5 columns: Id (INTEGER), Name (VARCHAR(255)), Category VARCHAR(255), Vegetarian (BOOLEAN), and Price (REAL).
+
+To add a new row, we need to insert values into each of these columns, except ID, which auto increments.
+
+The syntax for inserting is: 
+
+```
+INSERT INTO Table (Column1, Column2, …, ColumnN) 
+VALUES (Column1Value, Column2Value, …, ColumnNValue);
+```
+
+For our table, we want to insert values for every column except Id, so we can use:
+
+```
+INSERT INTO Dish (Name, Category, Vegetarian, Price) 
+VALUES ("Grilled Veggie Sandwich", "Lunch", TRUE, 9.99);
+```
+
+This creates a new dish, named Grilled Veggie Sandwich, with the Category Lunch, Vegetarian value TRUE, and a Price of 9.99.
+
+### Deleting
+To delete a single row, we want to specify the row using a unique value. For example, to delete the Grilled Veggie sandwich, we would use:
+
+```
+DELETE FROM Dish
+WHERE Name LIKE 'Grilled Veggie Sandwich';
+```
+
+This will delete the row with the matching name. But if we used:
+
+```
+DELETE FROM Dish
+WHERE Name LIKE 'Sandwich';
+```
+
+this would delete all the rows where the Name column contains the word 'Sandwich'. 
+
+Note that omitting the WHERE clause entirely will ***delete every row in the table!***
+
+We could also make sure we are deleting the right now by checking the Id with a SELECT statement. First, the select statement gets the Id of all rows containing the characters ‘sandwich’:
+
+```
+SELECT Id FROM Dish
+WHERE Name LIKE 'Sandwich';
+```
+
+This will return the Id of all the rows containing the word sandwich in the name. If there is more than 1 row, this means all of these rows will be deleted if we use this in a `WHERE` clause with `DELETE`. 
+
+Instead, we can find the ID of the correct row:
+
+```
+SELECT Id FROM Dish
+WHERE Name LIKE 'Grilled Veggie Sandwich'; 
+```
+→ Returns 26
+
+And delete that row:
+
+```
+DELETE FROM Dish
+WHERE Id = 26;
+```
+
+Since Id is a unique value, this will only delete one row, with the matching Id.
+
+### Updating
+
+What if we want to change values in a row? We can use the `UPDATE` command to change the value in a column.
+
+The syntax is:
+
+```
+UPDATE Table
+SET col1 = val1, col2 = val2, …
+[WHERE condition];
+```
+
+Like the `DELETE` command, the `WHERE` condition specifies which rows to be altered. If it is omitted, all the values for every row will be updated in that column.
+
+For example, the following:
+
+```
+UPDATE Dish
+SET Name = "Veggie Sandwich";
+```
+
+will change the name of every Dish in the table to "Veggie Sandwich"!
+
+Like the DELETE command, we would want to specify which rows to be updated in the WHERE cluase:
+
+```
+UPDATE Dish
+SET Name = "Veggie Sandwich"
+WHERE Id = 26;
+```
