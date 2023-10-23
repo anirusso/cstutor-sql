@@ -468,10 +468,10 @@ WHERE cte1.column = cte2.column;
 
 In the example above, we created 2 CTEs and returned all rows where cte1 had a matching key value in cte2. Note that the `WITH` clause is written once and each CTE is separated by a comma.
 
-We can also get only selected columns from the CTE. For example, the following CTE returns only two columns from the Sales table:
+We can also rename selected columns from the CTE. For example, the following CTE returns two columns from the Sales table:
 
 ```
-WITH Sales_CTE (SalesPersonID, NumberOfOrders)
+WITH sales_cte (id, num_orders)
 AS
 (
     SELECT SalesPersonID, COUNT(*)
@@ -479,6 +479,8 @@ AS
     WHERE SalesPersonID IS NOT NULL
     GROUP BY SalesPersonID
 )
-SELECT AVG(NumberOfOrders) AS "Average Sales Per Person"
-FROM Sales_CTE;
+SELECT AVG(num_orders) AS "Average Sales Per Person"
+FROM sales_cte;
 ```
+
+The id column is not used, and the count total of sales is renamed to num_orders. We then use that value of num_orders to calculate the average and return it as "Average Sales Per Person"
